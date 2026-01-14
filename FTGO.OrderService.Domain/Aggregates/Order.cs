@@ -6,7 +6,9 @@ namespace FTGO.OrderService.Domain.Aggregates;
 
 public class Order : Entity, IAggregateRoot
 {
-    private decimal _totalAmount;
+    private Guid _userId;
+    private decimal _orderTotalPrice;
+    private uint _orderTotalQuantity;
     private DeliveryInfo? _deliveryInfo;
     private PaymentInfo? _paymentInfo;
     private OrderStatus _orderStatus;
@@ -14,7 +16,25 @@ public class Order : Entity, IAggregateRoot
 
     public DeliveryInfo? DeliveryInfo => _deliveryInfo;
     public PaymentInfo? PaymentInfo => _paymentInfo;
-    public decimal TotalAmount => _totalAmount;
+
+    public decimal OrderTotalPrice
+    {
+        get => _orderTotalPrice;
+        private init => _orderTotalPrice = value;
+    }
+
+    public uint OrderTotalQuantity
+    {
+        get => _orderTotalQuantity;
+        private init => _orderTotalQuantity = value;
+    }
+
+    public Guid UserId
+    {
+        get => _userId;
+        private init => _userId = value;
+    }
+    
     public IReadOnlyCollection<OrderLineItem> OrderLineItems => _orderLineItems;
     public OrderStatus OrderStatus => _orderStatus;
     
@@ -27,11 +47,13 @@ public class Order : Entity, IAggregateRoot
         _paymentInfo = paymentInfo;
         _orderStatus = OrderStatus.Created;
         _orderLineItems = orderLineItems;
-        _totalAmount = CalcTotalAmount();
     }
-    
-    public IEnumerable<OrderLineItem> GetOrderLineItems() => _orderLineItems;
-    public decimal GetTotalAmount() => _totalAmount;
+
+    //TODO: Следующая итерация
+    private Order(DeliveryInfo? deliveryInfo, PaymentInfo paymentInfo, List<OrderLineItem> orderLineItems, Guid userId) : this(deliveryInfo, paymentInfo, orderLineItems)
+    {
+        _userId = userId;
+    }
     
     public DeliveryInfo? GetDeliveryInfo() => _deliveryInfo;
     public void SetDeliveryInfo(DeliveryInfo newDeliveryInfo)
@@ -39,7 +61,7 @@ public class Order : Entity, IAggregateRoot
         _deliveryInfo = newDeliveryInfo;
     }
     
-    public PaymentInfo? GetPaymentInfo() => _paymentInfo;
+    public PaymentInfo? GetPaymentInfo() => PaymentInfo;
     public void SetPaymentInfo(PaymentInfo newPaymentInfo)
     {
         _paymentInfo = newPaymentInfo;
@@ -51,7 +73,7 @@ public class Order : Entity, IAggregateRoot
         if (newOrderLineItem.IsSuccess)
         {
             _orderLineItems.Add(newOrderLineItem.Value);
-            _totalAmount = _orderLineItems.Sum(x => x.GetTotalAmount());
+            CalcOrderTotalValues();
         }
     }
 
@@ -61,19 +83,36 @@ public class Order : Entity, IAggregateRoot
         if (removeOrderLineItem is not null)
         {
             _orderLineItems.Remove(removeOrderLineItem);
-            _totalAmount = CalcTotalAmount();
+            CalcOrderTotalValues();
         }
     }
 
     public void ClearOrderLineItems()
     {
         _orderLineItems.Clear();
+        CalcOrderTotalValues();
     }
 
     public static Order Create(DeliveryInfo? deliveryInfo, PaymentInfo? paymentInfo, List<OrderLineItem> orderLineItems)
     {
         return new Order(deliveryInfo, paymentInfo, orderLineItems);
     }
+
+    private void CalcOrderTotalValues()
+    {
+        CalcOrderTotalPrice();
+        CalcOrderTotalQuantity();
+    }
     
-    private decimal CalcTotalAmount() => _orderLineItems.Sum(x => x.ProductPrice * x.Quantity);
+    private void CalcOrderTotalPrice()
+    {
+        _orderTotalPrice = _orderLineItems.Sum(x => x.ProductPrice * x.Quantity);
+
+    }
+
+    private void CalcOrderTotalQuantity()
+    {
+        _orderTotalQuantity = (uint)_orderLineItems.Sum(x => x.Quantity);
+
+    }
 }
