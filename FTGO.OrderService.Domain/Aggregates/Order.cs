@@ -1,10 +1,10 @@
-﻿using FTGO.OrderService.Domain.Abstractions;
-using FTGO.OrderService.Domain.Models;
+﻿using FTGO.OrderService.Domain.Models;
 using FTGO.OrderService.Domain.ValueObjects;
+using SharedKernel.Abstractions;
 
 namespace FTGO.OrderService.Domain.Aggregates;
 
-public class Order : Entity, IAggregateRoot
+public class Order : IAggregateRoot
 {
     private Guid _userId;
     private decimal _orderTotalPrice;
@@ -14,6 +14,7 @@ public class Order : Entity, IAggregateRoot
     private OrderStatus _orderStatus;
     private List<OrderLineItem> _orderLineItems;
 
+    public Guid Id { get; set; }
     public DeliveryInfo? DeliveryInfo => _deliveryInfo;
     public PaymentInfo? PaymentInfo => _paymentInfo;
 
@@ -107,12 +108,10 @@ public class Order : Entity, IAggregateRoot
     private void CalcOrderTotalPrice()
     {
         _orderTotalPrice = _orderLineItems.Sum(x => x.ProductPrice * x.Quantity);
-
     }
 
     private void CalcOrderTotalQuantity()
     {
         _orderTotalQuantity = (uint)_orderLineItems.Sum(x => x.Quantity);
-
     }
 }
