@@ -7,11 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Models\" />
+      <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
+      <PackageReference Include="FluentResults" Version="4.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models\" />
     </ItemGroup>
 
 </Project>
