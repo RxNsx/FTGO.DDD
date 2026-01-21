@@ -4,7 +4,7 @@ using SharedKernel.Abstractions;
 
 namespace FTGO.OrderService.Domain.Aggregates;
 
-public class Order : IAggregateRoot
+public class OrderAggregate : IAggregateRoot
 {
     private Guid _userId;
     private decimal _orderTotalPrice;
@@ -39,9 +39,9 @@ public class Order : IAggregateRoot
     public IReadOnlyCollection<OrderLineItem> OrderLineItems => _orderLineItems;
     public OrderStatus OrderStatus => _orderStatus;
     
-    private Order() { }
+    private OrderAggregate() { }
 
-    private Order(DeliveryInfo? deliveryInfo, PaymentInfo paymentInfo, List<OrderLineItem> orderLineItems)
+    private OrderAggregate(DeliveryInfo? deliveryInfo, PaymentInfo paymentInfo, List<OrderLineItem> orderLineItems)
     {
         Id = Guid.NewGuid();
         _deliveryInfo = deliveryInfo;
@@ -51,7 +51,7 @@ public class Order : IAggregateRoot
     }
 
     //TODO: Следующая итерация
-    private Order(DeliveryInfo? deliveryInfo, PaymentInfo paymentInfo, List<OrderLineItem> orderLineItems, Guid userId) : this(deliveryInfo, paymentInfo, orderLineItems)
+    private OrderAggregate(DeliveryInfo? deliveryInfo, PaymentInfo paymentInfo, List<OrderLineItem> orderLineItems, Guid userId) : this(deliveryInfo, paymentInfo, orderLineItems)
     {
         _userId = userId;
     }
@@ -94,9 +94,9 @@ public class Order : IAggregateRoot
         CalcOrderTotalValues();
     }
 
-    public static Order Create(DeliveryInfo? deliveryInfo, PaymentInfo? paymentInfo, List<OrderLineItem> orderLineItems)
+    public static OrderAggregate Create(DeliveryInfo? deliveryInfo, PaymentInfo? paymentInfo, List<OrderLineItem> orderLineItems)
     {
-        return new Order(deliveryInfo, paymentInfo, orderLineItems);
+        return new OrderAggregate(deliveryInfo, paymentInfo, orderLineItems);
     }
 
     private void CalcOrderTotalValues()

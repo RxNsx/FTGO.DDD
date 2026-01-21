@@ -4,38 +4,46 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FTGO.OrderService.API.Controllers;
 
-[Route("api/v1/[controller]")]
+[Route("api/v1/orders/order")]
 [ApiController]
 public class OrderController(IOrderService orderService) : ControllerBase
 {
-    [Route("[action]")]
+    [Route("{orderId:guid}")]
     [HttpGet]
-    public async Task<IActionResult> GetAsync([FromQuery] OrderFinderDto orderFinderDto)
+    public async Task<IActionResult> GetAsync([FromRoute] Guid orderId)
     {
-        var result = await orderService.GetAsync(orderFinderDto);
-        if (!string.IsNullOrEmpty(result.ErrorMessage))
+        var result = await orderService.GetAsync(new OrderFinderDto() { OrderId = orderId });
+        if (!result.IsSuccess)
         {
-            return NotFound(new OrderErrorResponse()
-            {
-                ErrorMessage = result.ErrorMessage,
-            });
+            return NotFound();
         }
-        return Ok(result);
+        
+        return Ok(result.Value);
     }
 
-    [Route("[action]")]
+    [Route("create")]
     [HttpPost]
     public async Task<IActionResult> CreateAsync(OrderCreateDto orderCreateDto)
     {
-        var newOrder = await orderService.CreateAsync(orderCreateDto);      
-        return Ok(newOrder);
+        var result = await orderService.CreateAsync(orderCreateDto);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(string.Join(',', result.Errors.Select(x => x.Message).ToList()));
+        }
+        
+        return Created(new Uri("api/v1/orders/order/" + result.Value.OrderId), result.Value);
     }
 
-    [Route("[action]")]
+    [Route("{orderId:guid}")]
     [HttpDelete]
-    public async Task<IActionResult> DeleteAsync(OrderDeleteDto orderDeleteDto)
+    public async Task<IActionResult> DeleteAsync([FromRoute] Guid orderId)
     {
-        await orderService.DeleteAsync(orderDeleteDto);
+        var result = await orderService.DeleteAsync(new OrderDeleteDto() { OrderId = Guid.Empty });
+        if (!result.IsSuccess)
+        {
+            return BadRequest(string.Join(',', result.Errors.Select(x => x.Message).ToList()));
+        }
+
         return Ok();
     }
 }

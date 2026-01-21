@@ -1,4 +1,5 @@
-﻿using FTGO.OrderService.Application.Dtos.Order;
+﻿using FluentResults;
+using FTGO.OrderService.Application.Dtos.Order;
 using FTGO.OrderService.Application.Interfaces;
 using FTGO.OrderService.Domain.Aggregates;
 using FTGO.OrderService.Domain.ValueObjects;
@@ -8,7 +9,7 @@ namespace FTGO.OrderService.Application.Services;
 
 public class OrderService(IOrderRepository orderRepository) : IOrderService
 {
-    public async Task<List<OrderResponseDto>> GetAllAsync()
+    public async Task<Result<List<OrderResponseDto>>> GetAllAsync()
     {
         var allOrders = await orderRepository.GetAllAsync();
         var allOrdersDto = allOrders
@@ -34,21 +35,18 @@ public class OrderService(IOrderRepository orderRepository) : IOrderService
             })
             .ToList();
         
-        return allOrdersDto;
+        return Result.Ok(allOrdersDto);
     }
 
-    public async Task<OrderResponseDto> GetAsync(OrderFinderDto orderFinderDto)
+    public async Task<Result<OrderResponseDto>> GetAsync(OrderFinderDto orderFinderDto)
     {
         var orderToFind = await orderRepository.GetAsync(orderFinderDto.OrderId);
         if (orderToFind is null)
         {
-            return new OrderResponseDto()
-            {
-                ErrorMessage = "Order not found"
-            };
+            return Result.Fail("Order not found");
         }
         
-        return new OrderResponseDto
+        var order = new OrderResponseDto
         {
             OrderId = orderToFind.Id,
             Street = orderToFind.DeliveryInfo!.Street,
@@ -68,19 +66,20 @@ public class OrderService(IOrderRepository orderRepository) : IOrderService
                 .ToList(),
             TotalProductAmount = orderToFind.OrderLineItems.Sum(t => t.Quantity)
         };
+        return Result.Ok(order);
     }
 
-    public async Task<OrderResponseDto> CreateAsync(OrderCreateDto orderCreateDto)
+    public async Task<Result<OrderResponseDto>> CreateAsync(OrderCreateDto orderCreateDto)
     {
         var paymentInfo = PaymentInfo.Create(orderCreateDto.CardHolder, orderCreateDto.CardNumber, orderCreateDto.ExpiryDate);
         var deliveryInfo = DeliveryInfo.Create(orderCreateDto.City, orderCreateDto.Street, orderCreateDto.DeliveryDateTime);
         var orderLineItems = orderCreateDto.OrderLineItems
             .Select(x => OrderLineItem.Create(x.ProductId, x.ProductName, x.ProductPrice, x.Quantity).Value)
             .ToList();
-        var newOrder = Order.Create(deliveryInfo.Value, paymentInfo.Value, orderLineItems);
+        var newOrder = OrderAggregate.Create(deliveryInfo.Value, paymentInfo.Value, orderLineItems);
         
         var createdOrder = await orderRepository.CreateAsync(newOrder);
-        return new OrderResponseDto
+        var cretedOrderResponse = new OrderResponseDto
         {
             OrderId = createdOrder.Id,
             Street = createdOrder.DeliveryInfo!.Street,
@@ -100,10 +99,15 @@ public class OrderService(IOrderRepository orderRepository) : IOrderService
                 .ToList(),
             TotalProductAmount = createdOrder.OrderLineItems.Sum(t => t.Quantity)
         };
+
+        return Result.Ok(cretedOrderResponse);
     }
 
-    public async Task DeleteAsync(OrderDeleteDto orderDeleteDto)
+    public async Task<Result<bool>> DeleteAsync(OrderDeleteDto orderDeleteDto)
     {
-        await orderRepository.DeleteAsync(orderDeleteDto.OrderId); 
+        var isDeleted = await orderRepository.DeleteAsync(orderDeleteDto.OrderId);
+        return isDeleted 
+            ? Result.Ok(true) 
+            : Result.Fail($"Order {orderDeleteDto.OrderId} not deleted");
     }
 }

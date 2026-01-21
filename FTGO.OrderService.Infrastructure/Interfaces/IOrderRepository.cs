@@ -4,8 +4,8 @@ namespace FTGO.OrderService.Infrastructure.Interfaces;
 
 public interface IOrderRepository
 {
-    Task<List<Order>> GetAllAsync();
-    Task<Order?> GetAsync(Guid orderId);
-    Task<Order> CreateAsync(Order order);
-    Task DeleteAsync(Guid orderId);
+    Task<List<OrderAggregate>> GetAllAsync();
+    Task<OrderAggregate?> GetAsync(Guid orderId);
+    Task<OrderAggregate> CreateAsync(OrderAggregate order);
+    Task<bool> DeleteAsync(Guid orderId);
 }

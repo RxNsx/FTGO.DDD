@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FTGO.OrderService.Infrastructure.EntityConfigurations;
 
-public class OrderConfiguration : IEntityTypeConfiguration<Order>
+public class OrderConfiguration : IEntityTypeConfiguration<OrderAggregate>
 {
-    public void Configure(EntityTypeBuilder<Order> builder)
+    public void Configure(EntityTypeBuilder<OrderAggregate> builder)
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.UserId).IsRequired();

@@ -11,7 +11,11 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.23" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="Testcontainers" Version="4.10.0" />
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.10.0" />
         <PackageReference Include="xunit" Version="2.5.3"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
     </ItemGroup>
@@ -21,12 +25,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Integration\" />
       <Folder Include="TestSeedData\" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\FTGO.OrderService.API\FTGO.OrderService.API.csproj" />
       <ProjectReference Include="..\FTGO.OrderService.Domain\FTGO.OrderService.Domain.csproj" />
+      <ProjectReference Include="..\FTGO.OrderService.Infrastructure\FTGO.OrderService.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
