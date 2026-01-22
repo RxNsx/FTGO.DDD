@@ -1,0 +1,24 @@
+﻿services:
+  ftgo.userservice.api:
+    image: ftgo.userservice.api
+    build:
+      context: .
+      dockerfile: FTGO.UserService.API/Dockerfile
+    ports:
+      - "8001:8080"
+  
+  ftgo.orderservice.api:
+    image: ftgo.orderservice.api
+    build:
+      context: .
+      dockerfile: FTGO.OrderService.API/Dockerfile
+    ports:
+      - "8002:8080"
+
+  ftgo.analyticalservice.api:
+    image: ftgo.analyticalservice.api
+    build:
+      context: .
+      dockerfile: FTGO.AnalyticalService.API/Dockerfile
+    ports:
+      - "8003:8080"

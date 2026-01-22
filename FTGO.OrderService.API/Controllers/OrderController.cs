@@ -23,7 +23,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
 
     [Route("create")]
     [HttpPost]
-    public async Task<IActionResult> CreateAsync(OrderCreateDto orderCreateDto)
+    public async Task<IActionResult> CreateAsync([FromBody]OrderCreateDto orderCreateDto)
     {
         var result = await orderService.CreateAsync(orderCreateDto);
         if (!result.IsSuccess)
